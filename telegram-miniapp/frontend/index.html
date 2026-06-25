@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Мой Telegram Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--tg-theme-bg-color, #ffffff);
+      color: var(--tg-theme-text-color, #000000);
+      padding: 16px;
+    }
+    h1 { font-size: 20px; margin-bottom: 8px; }
+    .card {
+      background: var(--tg-theme-secondary-bg-color, #f4f4f5);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: var(--tg-theme-button-color, #2481cc);
+      color: var(--tg-theme-button-text-color, #ffffff);
+      font-size: 16px;
+      margin-top: 16px;
+      cursor: pointer;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 12px;
+      background: rgba(0,0,0,0.05);
+      padding: 8px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>👋 Привет, Mini App!</h1>
+  <p>Это стартовый шаблон Telegram Mini App.</p>
+  <div class="card">
+    <strong>Данные пользователя:</strong>
+    <pre id="user-data">загрузка...</pre>
+  </div>
+  <button id="check-server-btn">Проверить связь с backend</button>
+  <div class="card" id="server-result" style="display:none;"></div>
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      document.body.style.backgroundColor = tg.themeParams.bg_color || '#ffffff';
+      document.getElementById('user-data').textContent =
+        JSON.stringify(tg.initDataUnsafe?.user || {}, null, 2);
+    } else {
+      document.getElementById('user-data').textContent =
+        'Откройте это приложение внутри Telegram, чтобы увидеть данные пользователя.';
+    }
+    const BACKEND_URL = 'http://localhost:8080';
+    document.getElementById('check-server-btn').addEventListener('click', async () => {
+      const resultBox = document.getElementById('server-result');
+      resultBox.style.display = 'block';
+      resultBox.textContent = 'Запрос...';
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/me`, {
+          headers: { 'X-Telegram-Init-Data': tg ? tg.initData : '' }
+        });
+        if (!res.ok) {
+          resultBox.textContent = `Ошибка: ${res.status} ${await res.text()}`;
+          return;
+        }
+        const data = await res.json();
+        resultBox.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (err) {
+        resultBox.textContent = `Не удалось связаться с backend: ${err.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
