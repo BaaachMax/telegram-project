@@ -1,5 +1,11 @@
-backend
-bot
+# скомпилированные бинарники (без расширения, в корне бэкенда/бота)
+/telegram-bot/telegram-bot
+/telegram-bot/bot
+/telegram-miniapp/backend/backend
 *.exe
+
+# переменные окружения
 .env
+
+# системные файлы
 .DS_Store
